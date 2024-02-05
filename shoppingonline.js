@@ -6,8 +6,7 @@ class Customer {
     this.phone = phone;
     this.email = email;
   }
-
-  addAccount(account) {
+  setAccount(account) {
     this.account = account;
   }
 }
@@ -20,72 +19,19 @@ class WebUser {
     this.password = password;
     this.state = state;
   }
-
   setCustomer(customer) {
     this.customer = customer;
   }
-
   setShoppingCart(shoppingCart) {
     this.shoppingCart = shoppingCart;
   }
 }
 
-class Account {
-  shoppingCart = null;
-  payments = [];
-  orders = [];
-  constructor(billing_address, is_closed, open, closed) {
-    this.billing_address = billing_address;
-    this.is_closed = is_closed;
-    this.open = open;
-    this.closed = closed;
-  }
-
-  setShoppingCart(shoppingCart) {
-    this.shoppingCart = shoppingCart;
-  }
-
-  addPayment(payment) {
-    this.payments.push(payment);
-  }
-
-  addOrder(order) {
-    this.orders.push(order);
-  }
-}
-
-class Order {
-  payment = null;
-  lineItems = [];
-  total = 0;
-  shipped = "";
-  constructor(number, ordered, ship_to, status) {
-    this.number = number;
-    this.ordered = ordered;
-    // this.shipped = shipped;
-    this.ship_to = ship_to;
-    this.status = status;
-    // this.total = total;
-  }
-
-  setPayment(payment) {
-    this.payment = payment;
-  }
-
-  addLineItem(lineItem) {
-    this.lineItems.push(lineItem);
-  }
-
-  setTotal() {
-    let total = 0;
-    for (let i = 0; i < this.lineItems.length; i++) {
-      total += this.lineItems[i].quantity * this.lineItems[i].price;
-    }
-    this.total = total;
-  }
-
-  setShippedDate(date) {
-    this.shipped = date;
+class Product {
+  constructor(id, name, supplier) {
+    this.id = id;
+    this.name = name;
+    this.supplier = supplier;
   }
 }
 
@@ -98,55 +44,149 @@ class Payment {
   }
 }
 
+class Account {
+  shoppingCart = null;
+  payments = [];
+  orders = [];
+  constructor(id, billing_address, is_closed, open, closed) {
+    this.id = id;
+    this.billing_address = billing_address;
+    this.is_closed = is_closed;
+    this.open = open;
+    this.closed = closed;
+  }
+  setShoppingCart(shoppingCart) {
+    this.shoppingCart = shoppingCart;
+  }
+  addPayment(payment) {
+    this.payments.push(payment);
+  }
+  addOrder(order) {
+    this.orders.push(order);
+  }
+  printOrderDetail() {
+    let totalOrderPrice = 0;
+    for (let i = 0; i < this.orders.length; i++) {
+      console.log("คำสั่งซื้อที่: " + (i + 1));
+      this.orders[i].printDetail();
+      totalOrderPrice += this.orders[i].total;
+    }
+    console.log("ใช้จ่ายไปทั้งสิ้น :" + totalOrderPrice + "บาท");
+    console.log(
+      "มีสินค้าในตะกร้าทั้งหมด :"
+      +this.shoppingCart.lineItems.length + "รายการ"
+    );
+  }
+}
+
 class LineItem {
   product = null;
   constructor(quantity, price) {
     this.quantity = quantity;
     this.price = price;
   }
-
-  setProduct(product) {
+  setproduct(product) {
     this.product = product;
   }
+  getDetail() {
+    return (
+      this.product.name +
+      " จำนวน " +
+      this.quantity +
+      " รายการ " +
+      " ราคา " +
+      this.calcSubTotal() +
+      " บาท"
+    );
+  }
+  calcSubTotal() {
+    return this.quantity * this.price;
+  }
 }
-
 class ShoppingCart {
   lineItems = [];
   constructor(created) {
     this.created = created;
   }
-
   addLineItem(lineItem) {
     this.lineItems.push(lineItem);
   }
-}
-
-class Product {
-  constructor(id, name, supplier) {
-    this.id = id;
-    this.name = name;
-    this.supplier = supplier;
+  calcTotal() {
+    let total = 0;
+    for (let i = 0; i < this.lineItems.length; i++) {
+      total += this.lineItems[i].quantity * this.lineItems[i].price;
+    }
+    return total;
+  }
+  printShoppingCart() {
+    for (let i = 0; i < this.lineItems.length; i++) {
+      console.log("รายการที่ " + (i + 1) + " " + this.lineItems[i].getDetail());
+    }
+    console.log("ราคารวมสินค้าในตระกร้าทั้งหมด :" + this.calcTotal);
   }
 }
 
-// Enumeration (enum)
-class UserState {
-  static NEW = new UserState("New");
-  static ACTIVE = new UserState("Active");
-  static BLOCKED = new UserState("Blocked");
-  static BANNED = new UserState("Banned");
+class Order {
+  payment = null;
+  lineItems = [];
+  total = 0;
+  shipped = "";
+  constructor(number, ordered, status, ship_to) {
+    this.number = number;
+    this.ordered = ordered;
 
+    this.status = status;
+    this.ship_to = ship_to;
+  }
+  setPayment(payment) {
+    this.payment = payment;
+  }
+  addLineItem(lineItem) {
+    this.lineItems.push(lineItem);
+  }
+  setTotal() {
+    let total = 0;
+    for (let i = 0; i < this.lineItems.length; i++) {
+      total += this.lineItems[i].quantity * this.lineItems[i].price;
+    }
+    this.total = total;
+  }
+  setShippedDate(date) {
+    this.shipped = date;
+  }
+  printDetail() {
+    for (let i = 0; i < this.lineItems.length; i++) {
+      console.log("รายการที่ " + (i + 1) + " " + this.lineItems[i].getDetail());
+    }
+    this.setTotal();
+    console.log("ราคารวม : " + this.total + " บาท");
+    console.log(
+      "ชำระวันที่ : " +
+        this.payment.paid +
+        " เป็นจำนวนเงิน : " +
+        this.payment.total +
+        " บาท"
+    );
+  }
+}
+
+//Enumeration (enum)
+class UserState {
+  static NEW = new UserState("new");
+  static ACTIVE = new UserState("active");
+  static BLOCKED = new UserState("blocked");
+  static BANNED = new UserState("banned");
   constructor(name) {
     this.name = name;
   }
 }
 
 class OrderStatus {
-  static NEW = new OrderStatus("New");
-  static HOLD = new OrderStatus("Hold");
-  static SHIPPED = new OrderStatus("Shipped");
-  static DELIVERED = new OrderStatus("Delivered");
-  static CLOSED = new OrderStatus("Closed");
+  static NEW = new OrderStatus("new");
+  static HOLD = new OrderStatus("hold");
+  static SHIPPED = new OrderStatus("shipped");
+  static DELIVERED = new OrderStatus("delivered");
+  static CLOSED = new OrderStatus("closed");
 
   constructor(name) {
     this.name = name;
@@ -154,79 +194,63 @@ class OrderStatus {
 }
 
 const main = () => {
-  // Create User
   const user1 = new WebUser("user1", "123456", UserState.NEW);
-  const user2 = new WebUser("user2", "789999", UserState.ACTIVE);
+  const user2 = new WebUser("user2", "123456", UserState.ACTIVE);
 
-  // Create Customer
-  const cus1 = new Customer("C01", "TH", "0852596151", "example@mail.com");
-  const cus2 = new Customer("C02", "TH", "0855296154", "example@mail.com");
+  const account1 = new Account("Kay", "BanKay", false, "05/01/2567", "");
+  //console.log(user1.state);
 
-  // Create Product
-  const product1 = new Product("P01", "Pencil", "NJ");
-  const product2 = new Product("P02", "Pen", "BELL");
-  const product3 = new Product("P03", "Eraser", "JANE");
-  const product4 = new Product("P04", "Ruler", "MIND");
-  const product5 = new Product("P05", "Ink_Pen", "PIM");
+  const pen = new Product(1, "pen", "vick");
+  const pencil = new Product(2, "pencil", "Tin");
+  const colors = new Product(3, "colors", "vick");
+  const paper = new Product(4, "paper", "vick");
+  const cardboard = new Product(5, "cardboard", "vick");
 
-  // Create Order
-  const order1 = new Order(
-    "O01",
-    "2024/01/12",
-    "TungBua",
-    OrderStatus.DELIVERED
-  );
-  const order2 = new Order("O01", "2024/01/22", "TungBua", OrderStatus.HOLD);
+  // จำนวน Order
+  const order1 = new Order("01", "05/01/2567", "Bankay", OrderStatus.CLOSED);
 
-  // Create Line Item
-  const line1 = new LineItem(10, 15);
-  const line2 = new LineItem(20, 20);
-  const line3 = new LineItem(30, 25);
-  const line4 = new LineItem(40, 30);
+  const order2 = new Order("02", "05/01/2567", "Bankay", OrderStatus.CLOSED);
 
-  // Create Shopping Cart
-  const shoppingCart1 = new ShoppingCart("2024/01/12");
-  const shoppingCart2 = new ShoppingCart("2024/01/22");
+  const lineItem1 = new LineItem(10, 15);
+  lineItem1.setproduct(pen);
+  const lineItem2 = new LineItem(10, 15);
+  lineItem2.setproduct(pencil);
+  const lineItem3 = new LineItem(2, 1);
+  lineItem3.setproduct(paper);
 
-  // Add Product to Line Item
-  line1.setProduct(product1);
-  line2.setProduct(product2);
-  line3.setProduct(product3);
-  line4.setProduct(product4);
+  order1.addLineItem(lineItem1);
+  order1.addLineItem(lineItem2);
+  order1.addLineItem(lineItem3);
 
-  // Add Line Item to Order
-  order1.addLineItem(line1);
-  order1.addLineItem(line2);
-  order2.addLineItem(line3);
-  order2.addLineItem(line3);
+  order2.addLineItem(lineItem2);
+  order2.addLineItem(lineItem3);
 
-  // Add Line Item to Shopping Cart
-  shoppingCart1.addLineItem(line1);
-  shoppingCart1.addLineItem(line2);
-  shoppingCart2.addLineItem(line3);
-  shoppingCart2.addLineItem(line4);
+  order1.setTotal();
+  order2.setTotal();
 
-  // Set Shopping Cart to User
-  user1.setShoppingCart(shoppingCart1);
-  user2.setShoppingCart(shoppingCart2);
+  order1.setShippedDate("30/01/2567");
+  order2.setShippedDate("30/01/2567");
 
-  // Set Customer to User
-  user1.setCustomer(cus1);
-  user2.setCustomer(cus2);
+  const payment1 = new Payment("p01", "22/01/2567", order1.total, "ส่งที่หอ");
+  const payment2 = new Payment("p01", "22/01/2567", order2.total, "ส่งที่หอ");
 
-  // Create Payment and Set to Order
-  const payment1 = new Payment("P01", "2024/01/22", order1.total, "Deliveried");
+  account1.addOrder(order1);
+  account1.addOrder(order2);
+
   order1.setPayment(payment1);
+  order2.setPayment(payment2);
 
-  // Use Function in Order Class
-  order1.setTotal;
+  const shoppingCart1 = new ShoppingCart("20/02/67");
+  shoppingCart1.addLineItem(lineItem2);
+  shoppingCart1.addLineItem(lineItem3);
 
-  // Set shipped date in Order Class
-  order1.setShippedDate("2024/01/22");
+  console.log("ชื่อ : " + account1.id);
+  console.log("จำนวนคำสั่งซื้อ : " + account1.orders.length);
+  //order1.printDetail();
+  //order2.printDetail();
+  account1.printOrderDetail();
+  account1.shoppingCart.printShoppingCart();
 
-  console.log(user1);
-  console.log(user1.customer);
-  console.log(user1.shoppingCart);
-  console.log(user1.shoppingCart.lineItems);
+  console.log("--------------------");
 };
 main();
